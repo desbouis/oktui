@@ -148,9 +148,24 @@ class OKtui(App):
     def watch_selected_instance_name(self, value: str) -> None:
         """Display selected instance name."""
         if value:
-            log("TODO: execute 'openstack server show'")
+            self.fetch_instance_details(value)
             self.widget_main_panel.border_title = f"Details of {value}"
             self.widget_main_panel.update(f"Execute 'openstack server show {value}' and display result here")
+
+
+    @work(thread=True)
+    def fetch_instance_details(self, value: str) -> None:
+        try:
+            result = subprocess.run(
+                ["openstack", "server", "show", value, "--os-region-name", "GRA9", "--format", "json"],
+                capture_output=True,
+                text=True,
+                check=True
+            )
+            details = result.stdout
+            self.widget_main_panel.update(details)
+        except Exception as e:
+            self.widget_main_panel.update(f"Error: {e}")
 
 
 if __name__ == "__main__":
