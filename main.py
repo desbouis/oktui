@@ -32,6 +32,7 @@ class OKtui(App):
     last_update: reactive[str] = reactive("")
     selected_instance_name: reactive[str] = reactive("")
     instances_list = []
+    instances_details = {}
 
 
     def compose(self) -> ComposeResult:
@@ -113,6 +114,7 @@ class OKtui(App):
         """Refresh instances list."""
         self.widget_status_bar.update("Refreshing instances list...")
         self.instances_list = []
+        self.instances_details = {}
         search = self.query_one(Input).value
         self.load_instances(search=search)
         self.notify("Instances list well refreshed!")
@@ -156,14 +158,15 @@ class OKtui(App):
     @work(thread=True)
     def fetch_instance_details(self, value: str) -> None:
         try:
-            result = subprocess.run(
-                ["openstack", "server", "show", value, "--os-region-name", "GRA9", "--format", "json"],
-                capture_output=True,
-                text=True,
-                check=True
-            )
-            details = result.stdout
-            self.widget_main_panel.update(details)
+            if not self.instances_details.get(value):
+                result = subprocess.run(
+                    ["openstack", "server", "show", value, "--os-region-name", "GRA9", "--format", "json"],
+                    capture_output=True,
+                    text=True,
+                    check=True
+                )
+                self.instances_details[value] = result.stdout
+            self.widget_main_panel.update(self.instances_details[value])
         except Exception as e:
             self.widget_main_panel.update(f"Error: {e}")
 
