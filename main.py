@@ -1,6 +1,7 @@
 import asyncio
-
 from datetime import datetime
+import json
+import subprocess
 
 from textual import log
 from textual import on
@@ -16,20 +17,6 @@ from textual.widgets import (
     Static,
 )
 
-INSTANCES = [
-    ("postgresql-bla9-01"),
-    ("redis-bla9-01"),
-    ("front-http-bla9-01"),
-    ("front-worker-bla9-01"),
-    ("front-cron-bla9-01"),
-    ("consul-bla9-01"),
-    ("consul-bla9-03"),
-    ("postgresql-sob7-02"),
-    ("redis-sob7-02"),
-    ("front-http-sob7-02"),
-    ("front-worker-sob7-02"),
-    ("consul-sob7-02"),
-]
 
 class OKtui(App):
     """OpenStack TUI"""
@@ -44,6 +31,7 @@ class OKtui(App):
 
     last_update: reactive[str] = reactive("")
     selected_instance_name: reactive[str] = reactive("")
+    instances_list = []
 
 
     def compose(self) -> ComposeResult:
@@ -66,16 +54,47 @@ class OKtui(App):
         self.load_instances()
 
 
+    @work(thread=True)
     def load_instances(self, search: str = "") -> None:
         """Load instances list."""
         self.widget_instances_list.clear()
-        log("TODO: execute 'openstack server list'")
-        INSTANCES.sort()
-        for instance in INSTANCES:
-            if search and search.lower() not in instance.lower():
-                continue
-            self.widget_instances_list.add_row(instance, key=instance)
-        self.last_update = datetime.now().strftime("%H:%M:%S")
+        self.widget_status_bar.update("Loading instances list...")
+
+        try:
+            # Execute openstack command if needed
+            if not self.instances_list:
+                result = subprocess.run(
+                    ["openstack", "server", "list", "--os-region-name", "GRA9", "--format", "json", "--sort-column", "Name"],
+                    capture_output=True,
+                    text=True,
+                    check=True
+                )
+                # Parse json output
+                self.instances_list = json.loads(result.stdout)
+
+                # Get last update
+                self.last_update = datetime.now().strftime("%H:%M:%S")
+
+            # Filter
+            instances_to_display = self.instances_list
+            if search:
+                instances_to_display = [instance for instance in self.instances_list if search.lower() in instance["Name"].lower()]
+
+            # Load in DataTable
+            for instance in instances_to_display:
+                self.widget_instances_list.add_row(instance["Name"], key=instance["Name"])
+
+            self.widget_status_bar.update(f"{len(instances_to_display)} instances [Last update: {self.last_update}]")
+
+        except subprocess.CalledProcessError as e:
+            self.widget_status_bar.update(f"Error: {e.stderr.strip()}")
+            log(f"Error: {e}")
+        except json.JSONDecodeError as e:
+            self.widget_status_bar.update(f"Error: Invalid JSON from OpenStack 'server list': {e}")
+            log(f"Error: {e}")
+        except Exception as e:
+            self.widget_status_bar.update(f"Error: {e}")
+            log(f"Error: {e}")
 
 
     @on(Input.Changed, "#filter")
@@ -89,9 +108,9 @@ class OKtui(App):
     async def refresh_instances(self) -> None:
         """Refresh instances list."""
         self.widget_status_bar.update("Refreshing instances list...")
-        await asyncio.sleep(1)  # Simulate latency
+        self.instances_list = []
         search = self.query_one(Input).value
-        await self.load_instances(search=search)
+        self.load_instances(search=search)
         self.notify("Instances list well refreshed!")
 
 
