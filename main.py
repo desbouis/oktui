@@ -26,7 +26,7 @@ class OKtui(App):
     BINDINGS = [
         ("q", "quit", "Exit"),
         ("d", "toggle_dark", "Toggle theme"),
-        ("r", "refresh", "Refresh instances list"),
+        ("r", "refresh", "Refresh data"),
     ]
 
     last_update: reactive[str] = reactive("")
@@ -110,18 +110,18 @@ class OKtui(App):
 
 
     @work(exclusive=True)
-    async def refresh_instances(self) -> None:
-        """Refresh instances list."""
-        self.widget_status_bar.update("Refreshing instances list...")
+    async def refresh_data(self) -> None:
+        """Refresh all data."""
+        self.widget_status_bar.update("Refreshing data...")
         self.instances_list = []
         self.instances_details = {}
         search = self.query_one(Input).value
         self.load_instances(search=search)
-        self.notify("Instances list well refreshed!")
+        self.notify("All data will be refreshed!")
 
 
     def action_refresh(self) -> None:
-        self.refresh_instances()
+        self.refresh_data()
 
 
     @on(DataTable.RowSelected)
