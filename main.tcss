@@ -1,0 +1,42 @@
+/* --- Layout de base --- */
+#sidebar {
+    width: 20%;
+    background: $panel;
+    padding: 1 1;
+    border-right: tall $primary;
+    text-style: bold;
+}
+#sidebar:hover {
+    background: $primary 20%;
+}
+#sidebar:light {
+    background: #e8e8f0;
+    color: #333333;
+}
+
+#main-panel {
+    width: 1fr;
+    height: 100%;
+    background: $surface;
+    border: solid $primary;
+    border-title-color: $primary;
+    border-title-style: bold;
+    padding: 1;
+    margin: 0 0 0 0;
+}
+
+#status-bar {
+    dock: bottom;
+    height: 1;
+    background: $primary;
+    color: $text;
+    padding: 0 2;
+}
+
+#instances-list {
+    height: 1fr;
+}
+
+Input {
+    margin: 0 0 1 0;
+}
