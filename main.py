@@ -71,6 +71,10 @@ class OKtui(App):
                 )
                 # Parse json output
                 self.instances_list = json.loads(result.stdout)
+                # Append a status label property
+                for instance in self.instances_list:
+                    color = "green" if instance["Status"] == "ACTIVE" else "red" if instance["Status"] == "SHUTOFF" else "yellow"
+                    instance["status_label"] = f"[{color}]●[/]"
 
                 # Get last update
                 self.last_update = datetime.now().strftime("%H:%M:%S")
@@ -82,7 +86,7 @@ class OKtui(App):
 
             # Load in DataTable
             for instance in instances_to_display:
-                self.widget_instances_list.add_row(instance["Name"], key=instance["Name"])
+                self.widget_instances_list.add_row(instance["Name"], key=instance["Name"], label=instance["status_label"])
 
             self.widget_status_bar.update(f"{len(instances_to_display)} instances [Last update: {self.last_update}]")
 
