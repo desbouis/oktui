@@ -74,14 +74,20 @@ class OKtui(App):
         try:
             # Execute openstack command if needed
             if not self.instances_list:
-                result = subprocess.run(
-                    ["openstack", "server", "list", "--os-region-name", "GRA9", "--format", "json", "--sort-column", "Name"],
-                    capture_output=True,
-                    text=True,
-                    check=True
-                )
-                # Parse json output
-                self.instances_list = json.loads(result.stdout)
+                for region in self.regions:
+                    cmd = ["openstack", "server", "list", "--os-region-name", region, "--format", "json", "--sort-column", "Name"]
+                    result = subprocess.run(
+                        cmd,
+                        capture_output=True,
+                        text=True,
+                        check=True
+                    )
+                    # Parse json output
+                    self.instances_list += json.loads(result.stdout)
+
+                # Sort by name
+                self.instances_list.sort(key=lambda x: x["Name"])
+
                 # Append a status label property
                 for instance in self.instances_list:
                     color = "green" if instance["Status"] == "ACTIVE" else "red" if instance["Status"] == "SHUTOFF" else "yellow"
