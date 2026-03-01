@@ -14,6 +14,7 @@ from textual.widgets import (
     Footer,
     Header,
     Input,
+    Label,
     RichLog,
     Static,
 )
@@ -40,8 +41,9 @@ class OKtui(App):
         yield Header()
         with Horizontal():
             with Vertical(id="sidebar"):
+                yield Label("Instances list:", id="instances-list-title")
                 yield Input(placeholder="Filter instances...", id="filter")
-                self.widget_instances_list = DataTable(cursor_type="row", id="instances-list")
+                self.widget_instances_list = DataTable(header_height=2, show_header=False, cursor_type="row", id="instances-list")
                 yield self.widget_instances_list
             self.widget_main_panel = RichLog(id="main-panel", highlight=True, markup=True, auto_scroll=False)
             self.widget_main_panel.border_title = "Select an instance to display details here..."
@@ -53,7 +55,7 @@ class OKtui(App):
 
     def on_mount(self) -> None:
         self.title = "OKtui"
-        self.widget_instances_list.add_columns("Instances list")
+        self.widget_instances_list.add_columns("instance_name")
         self.load_instances()
 
 
