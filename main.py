@@ -75,6 +75,7 @@ class OKtui(App):
             # Execute openstack command if needed
             if not self.instances_list:
                 for region in self.regions:
+                    list_by_region = []
                     cmd = ["openstack", "server", "list", "--os-region-name", region, "--format", "json", "--sort-column", "Name"]
                     result = subprocess.run(
                         cmd,
@@ -83,15 +84,21 @@ class OKtui(App):
                         check=True
                     )
                     # Parse json output
-                    self.instances_list += json.loads(result.stdout)
+                    list_by_region = json.loads(result.stdout)
+
+                    # Append some useful properties
+                    for instance in list_by_region:
+                        # status_label
+                        color = "green" if instance["Status"] == "ACTIVE" else "red" if instance["Status"] == "SHUTOFF" else "yellow"
+                        instance["status_label"] = f"[{color}]●[/]"
+                        # region
+                        instance["region"] = region
+
+                    # Concat all regions instances
+                    self.instances_list += list_by_region
 
                 # Sort by name
                 self.instances_list.sort(key=lambda x: x["Name"])
-
-                # Append a status label property
-                for instance in self.instances_list:
-                    color = "green" if instance["Status"] == "ACTIVE" else "red" if instance["Status"] == "SHUTOFF" else "yellow"
-                    instance["status_label"] = f"[{color}]●[/]"
 
                 # Get last update
                 self.last_update = datetime.now().strftime("%H:%M:%S")
