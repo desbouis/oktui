@@ -2,6 +2,7 @@ import asyncio
 from datetime import datetime
 import json
 import os
+import pyperclip
 import subprocess
 
 from textual import log
@@ -30,6 +31,7 @@ class OKtui(App):
         ("q", "quit", "Exit"),
         ("d", "toggle_dark", "Toggle theme"),
         ("r", "refresh", "Refresh data"),
+        ("c", "copy_main_panel", "Copy content"),
     ]
 
     regions = os.environ["OKTUI_REGIONS"].split()
@@ -145,6 +147,20 @@ class OKtui(App):
 
     def action_refresh(self) -> None:
         self.refresh_data()
+
+
+    def action_copy_main_panel(self) -> None:
+        """Copy content of main panel"""
+        try:
+            content = "```\n"
+            content += self.widget_main_panel.border_title
+            content += "\n\n"
+            content += self.instances_details[self.selected_instance_name]
+            content += "```\n"
+            pyperclip.copy(content)
+            self.notify("Content copied to clipboard!", severity="information")
+        except Exception as e:
+            self.notify(f"Error: {e}", severity="error")
 
 
     @on(DataTable.RowSelected)
