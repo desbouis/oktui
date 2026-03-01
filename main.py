@@ -57,6 +57,10 @@ class OKtui(App):
 
     def on_mount(self) -> None:
         self.title = "OKtui"
+        self.sub_title = f"{' '.join(self.regions)}"
+        for env_var in os.environ:
+            if env_var.startswith("OS_"):
+                self.sub_title += f" - {os.environ[env_var]}"
         self.widget_instances_list.add_columns("instance_name")
         self.load_instances()
 
