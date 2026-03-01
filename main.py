@@ -14,6 +14,7 @@ from textual.widgets import (
     Footer,
     Header,
     Input,
+    RichLog,
     Static,
 )
 
@@ -42,8 +43,8 @@ class OKtui(App):
                 yield Input(placeholder="Filter instances...", id="filter")
                 self.widget_instances_list = DataTable(cursor_type="row", id="instances-list")
                 yield self.widget_instances_list
-            self.widget_main_panel = Static("Select an instance to show information here...", id="main-panel")
-            self.widget_main_panel.border_title = "Instance details"
+            self.widget_main_panel = RichLog(id="main-panel", highlight=True, markup=True, auto_scroll=False)
+            self.widget_main_panel.border_title = "Select an instance to display details here..."
             yield self.widget_main_panel
             self.widget_status_bar = Static("status bar", id="status-bar")
             yield self.widget_status_bar
@@ -151,25 +152,24 @@ class OKtui(App):
     def watch_selected_instance_name(self, value: str) -> None:
         """Display selected instance name."""
         if value:
+            self.widget_main_panel.border_title = f"Executing command..."
+            self.widget_main_panel.clear()
             self.fetch_instance_details(value)
-            self.widget_main_panel.border_title = f"Details of {value}"
-            self.widget_main_panel.update(f"Execute 'openstack server show {value}' and display result here")
 
 
     @work(thread=True)
     def fetch_instance_details(self, value: str) -> None:
         try:
+            cmd = ["openstack", "server", "show", value, "--os-region-name", "GRA9", "--format", "table"]
             if not self.instances_details.get(value):
-                result = subprocess.run(
-                    ["openstack", "server", "show", value, "--os-region-name", "GRA9", "--format", "json"],
-                    capture_output=True,
-                    text=True,
-                    check=True
-                )
+                result = subprocess.run(cmd, capture_output=True, text=True, check=True)
                 self.instances_details[value] = result.stdout
-            self.widget_main_panel.update(self.instances_details[value])
+            self.widget_main_panel.border_title = f"{' '.join(cmd)}"
+            self.widget_main_panel.write(self.instances_details[value])
         except Exception as e:
-            self.widget_main_panel.update(f"Error: {e}")
+            self.widget_main_panel.clear()
+            self.widget_main_panel.write(f"Error: {e}")
+            log(f"Error: {e}")
 
 
 if __name__ == "__main__":
