@@ -51,6 +51,7 @@ class OKtui(App):
 
 
     def on_mount(self) -> None:
+        self.title = "OKtui"
         self.widget_instances_list.add_columns("Instances list")
         self.load_instances()
 
