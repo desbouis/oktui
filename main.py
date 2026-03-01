@@ -1,6 +1,7 @@
 import asyncio
 from datetime import datetime
 import json
+import os
 import subprocess
 
 from textual import log
@@ -31,6 +32,7 @@ class OKtui(App):
         ("r", "refresh", "Refresh data"),
     ]
 
+    regions = os.environ["OKTUI_REGIONS"].split()
     last_update: reactive[str] = reactive("")
     selected_instance_name: reactive[str] = reactive("")
     instances_list = []
