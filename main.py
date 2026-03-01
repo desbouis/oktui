@@ -181,7 +181,8 @@ class OKtui(App):
     @work(thread=True)
     def fetch_instance_details(self, value: str) -> None:
         try:
-            cmd = ["openstack", "server", "show", value, "--os-region-name", "GRA9", "--format", "table"]
+            region = next((instance for instance in self.instances_list if instance["Name"] == value), None)["region"]
+            cmd = ["openstack", "server", "show", value, "--os-region-name", region, "--format", "table"]
             if not self.instances_details.get(value):
                 result = subprocess.run(cmd, capture_output=True, text=True, check=True)
                 self.instances_details[value] = result.stdout
