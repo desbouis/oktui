@@ -19,6 +19,8 @@ from textual.widgets import (
     Label,
     RichLog,
     Static,
+    TabbedContent,
+    TabPane,
 )
 
 
@@ -58,9 +60,11 @@ class OKtui(App):
                 self.widget_instances_list = DataTable(header_height=2, show_header=False, cursor_type="row", id="instances-list")
                 yield self.widget_instances_list
 
-            self.widget_content_server_show = RichLog(id="content-server-show", highlight=True, markup=True, auto_scroll=False)
-            self.widget_content_server_show.border_title = self.initial_labels["title_server_show"]
-            yield self.widget_content_server_show
+            with TabbedContent(initial="tab-server-show", id="main-tabbed-content"):
+                with TabPane("Server show", id="tab-server-show"):
+                    self.widget_content_server_show = RichLog(id="content-server-show", highlight=True, markup=True, auto_scroll=False)
+                    self.widget_content_server_show.border_title = self.initial_labels["title_server_show"]
+                    yield self.widget_content_server_show
 
         self.widget_status_bar = Static(self.initial_labels["status_bar"], id="status-bar")
         yield self.widget_status_bar

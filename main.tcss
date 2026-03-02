@@ -18,9 +18,18 @@
     margin: 0 0 1 1
 }
 
-#content-server-show {
+#instances-list-title {
+    margin: 0 0 1 1
+}
+
+#main-tabbed-content {
     width: 1fr;
     height: 100%;
+    margin: 1 0 0 0;
+}
+
+#content-server-show {
+    width: 1fr;
     background: $surface;
     border: solid $primary;
     border-title-color: $primary;
