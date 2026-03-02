@@ -89,7 +89,6 @@ class OKtui(App):
     @work(thread=True)
     def load_instances(self, search: str = "") -> None:
         """Load instances list."""
-        self.widget_instances_list.clear()
         self.widget_status_bar.update("Loading instances list...")
 
         try:
@@ -153,8 +152,14 @@ class OKtui(App):
     async def refresh_data(self) -> None:
         """Refresh all data."""
         self.widget_status_bar.update("Refreshing data...")
+        # Clean stored data
         self.instances_list = []
         self.instances_details = {}
+        self.selected_instance_name = ""
+        # Reset interface
+        self.widget_instances_list.clear()
+        self.widget_main_panel.clear()
+        self.widget_main_panel.border_title = "Select an instance to display details here..."
         search = self.query_one(Input).value
         self.load_instances(search=search)
         self.notify("All data will be refreshed!")
