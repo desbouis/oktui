@@ -34,6 +34,7 @@ class OKtui(App):
         ("c", "copy_main_panel", "Copy content"),
     ]
 
+    auth_token = {}
     regions = os.environ["OKTUI_REGIONS"].split()
     last_update: reactive[str] = reactive("")
     selected_instance_name: reactive[str] = reactive("")
@@ -64,7 +65,25 @@ class OKtui(App):
             if env_var.startswith("OS_"):
                 self.sub_title += f" - {os.environ[env_var]}"
         self.widget_instances_list.add_columns("instance_name")
+        self.fetch_auth_token()
         self.load_instances()
+
+
+    def fetch_auth_token(self) -> None:
+        """
+        Fetch auth token to be use with all openstack commands.
+        MUST NOT BE CALLED IN THREAD
+        """
+        try:
+            if not self.auth_token:
+                cmd = ["openstack", "token", "issue", "--format", "json"]
+                result = subprocess.run(cmd, capture_output=True, text=True, check=True)
+                self.auth_token = json.loads(result.stdout)
+                # Append all required args to pass with all openstack commands
+                self.auth_token["auth_args"] = f"--os-token={self.auth_token['id']} --os-cloud= --os-auth-url=https://auth.cloud.ovh.net/v3 --os-auth-type=token"
+        except Exception as e:
+            self.widget_status_bar.update(f"Error: {e}")
+            log(f"Error: {e}")
 
 
     @work(thread=True)
@@ -79,12 +98,8 @@ class OKtui(App):
                 for region in self.regions:
                     list_by_region = []
                     cmd = ["openstack", "server", "list", "--os-region-name", region, "--format", "json", "--sort-column", "Name"]
-                    result = subprocess.run(
-                        cmd,
-                        capture_output=True,
-                        text=True,
-                        check=True
-                    )
+                    cmd[1:1] = self.auth_token["auth_args"].split()
+                    result = subprocess.run(cmd, capture_output=True, text=True, check=True)
                     # Parse json output
                     list_by_region = json.loads(result.stdout)
 
@@ -200,7 +215,9 @@ class OKtui(App):
             region = next((instance for instance in self.instances_list if instance["Name"] == value), None)["region"]
             cmd = ["openstack", "server", "show", value, "--os-region-name", region, "--format", "table"]
             if not self.instances_details.get(value):
-                result = subprocess.run(cmd, capture_output=True, text=True, check=True)
+                cmd_exec = cmd.copy()
+                cmd_exec[1:1] = self.auth_token["auth_args"].split()
+                result = subprocess.run(cmd_exec, capture_output=True, text=True, check=True)
                 self.instances_details[value] = result.stdout
             self.widget_main_panel.border_title = f"{' '.join(cmd)}"
             self.widget_main_panel.write(self.instances_details[value])
