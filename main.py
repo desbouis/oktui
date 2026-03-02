@@ -62,7 +62,7 @@ class OKtui(App):
 
             with TabbedContent(initial="tab-server-show", id="main-tabbed-content"):
                 with TabPane("Server show", id="tab-server-show"):
-                    self.widget_content_server_show = RichLog(id="content-server-show", highlight=True, markup=True, auto_scroll=False)
+                    self.widget_content_server_show = RichLog(id="content-server-show", highlight=True, markup=False, auto_scroll=False)
                     self.widget_content_server_show.border_title = self.initial_labels["title_server_show"]
                     yield self.widget_content_server_show
 
