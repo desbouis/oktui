@@ -40,20 +40,26 @@ class OKtui(App):
     selected_instance_name: reactive[str] = reactive("")
     instances_list = []
     instances_details = {}
+    initial_labels = {
+        "sidebar": "Instances list:",
+        "filter": "Filter instances...",
+        "main_panel_title": "Select an instance to display details here...",
+        "status_bar": "Loading...",
+    }
 
 
     def compose(self) -> ComposeResult:
         yield Header()
         with Horizontal():
             with Vertical(id="sidebar"):
-                yield Label("Instances list:", id="instances-list-title")
-                yield Input(placeholder="Filter instances...", id="filter")
+                yield Label(self.initial_labels["sidebar"], id="instances-list-title")
+                yield Input(placeholder=self.initial_labels["filter"], id="filter")
                 self.widget_instances_list = DataTable(header_height=2, show_header=False, cursor_type="row", id="instances-list")
                 yield self.widget_instances_list
             self.widget_main_panel = RichLog(id="main-panel", highlight=True, markup=True, auto_scroll=False)
-            self.widget_main_panel.border_title = "Select an instance to display details here..."
+            self.widget_main_panel.border_title = self.initial_labels["main_panel_title"]
             yield self.widget_main_panel
-            self.widget_status_bar = Static("status bar", id="status-bar")
+            self.widget_status_bar = Static(self.initial_labels["status_bar"], id="status-bar")
             yield self.widget_status_bar
         yield Footer()
 
@@ -159,7 +165,7 @@ class OKtui(App):
         # Reset interface
         self.widget_instances_list.clear()
         self.widget_main_panel.clear()
-        self.widget_main_panel.border_title = "Select an instance to display details here..."
+        self.widget_main_panel.border_title = self.initial_labels["main_panel_title"]
         search = self.query_one(Input).value
         self.load_instances(search=search)
         self.notify("All data will be refreshed!")
