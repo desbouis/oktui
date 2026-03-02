@@ -42,10 +42,12 @@ class OKtui(App):
     selected_instance_name: reactive[str] = reactive("")
     instances_list = []
     instances_details = {}
+    instances_console_logs = {}
     initial_labels = {
         "sidebar": "Instances list:",
         "filter": "Filter instances...",
         "title_server_show": "Select an instance to display details here...",
+        "title_console_log_show": "Select an instance to display logs here...",
         "status_bar": "Loading...",
     }
 
@@ -65,6 +67,10 @@ class OKtui(App):
                     self.widget_content_server_show = RichLog(id="content-server-show", highlight=True, markup=False, auto_scroll=False)
                     self.widget_content_server_show.border_title = self.initial_labels["title_server_show"]
                     yield self.widget_content_server_show
+                with TabPane("Console log show", id="tab-console-log-show"):
+                    self.widget_content_console_log_show = RichLog(id="content-console-log-show", highlight=True, markup=False, auto_scroll=True)
+                    self.widget_content_console_log_show.border_title = self.initial_labels["title_console_log_show"]
+                    yield self.widget_content_console_log_show
 
         self.widget_status_bar = Static(self.initial_labels["status_bar"], id="status-bar")
         yield self.widget_status_bar
@@ -168,11 +174,14 @@ class OKtui(App):
         # Clean stored data
         self.instances_list = []
         self.instances_details = {}
+        self.instances_console_logs = {}
         self.selected_instance_name = ""
         # Reset interface
         self.widget_instances_list.clear()
         self.widget_content_server_show.clear()
         self.widget_content_server_show.border_title = self.initial_labels["title_server_show"]
+        self.widget_content_console_log_show.clear()
+        self.widget_content_console_log_show.border_title = self.initial_labels["title_console_log_show"]
         search = self.query_one(Input).value
         self.load_instances(search=search)
         self.notify("All data will be refreshed!")
@@ -185,11 +194,19 @@ class OKtui(App):
     def action_copy_main_panel(self) -> None:
         """Copy content of main panel"""
         try:
-            content = "```\n"
-            content += self.widget_content_server_show.border_title
-            content += "\n\n"
-            content += self.instances_details[self.selected_instance_name]
-            content += "```\n"
+            tab = self.query_one("#main-tabbed-content", TabbedContent)
+            if tab.active == "tab-server-show":
+                content = "```\n"
+                content += self.widget_content_server_show.border_title
+                content += "\n\n"
+                content += self.instances_details[self.selected_instance_name]
+                content += "```\n"
+            if tab.active == "tab-console-log-show":
+                content = "```\n"
+                content += self.widget_content_console_log_show.border_title
+                content += "\n\n"
+                content += self.instances_console_logs[self.selected_instance_name]
+                content += "```\n"
             pyperclip.copy(content)
             self.notify("Content copied to clipboard!", severity="information")
         except Exception as e:
@@ -222,9 +239,29 @@ class OKtui(App):
     def watch_selected_instance_name(self, value: str) -> None:
         """Display selected instance name."""
         if value:
+            # Clean tabs
             self.widget_content_server_show.border_title = f"Executing command..."
             self.widget_content_server_show.clear()
+            self.widget_content_console_log_show.border_title = f"Executing command..."
+            self.widget_content_console_log_show.clear()
+            # Go to server show tab when selecting an instance
+            self.query_one("#main-tabbed-content", TabbedContent).active = "tab-server-show"
+            # Execute server show
             self.fetch_server_show(value)
+
+
+    @on(TabbedContent.TabActivated)
+    def exec_command(self, event) -> None:
+        """Switch to a new tab."""
+        try:
+            if self.selected_instance_name:
+                if event.tabbed_content.active == "tab-server-show":
+                    self.fetch_server_show(self.selected_instance_name)
+                if event.tabbed_content.active == "tab-console-log-show":
+                    self.fetch_console_log_show(self.selected_instance_name)
+        except Exception as e:
+            self.notify(f"Error: {e}", severity="error")
+            log(f"Error: {e}")
 
 
     @work(thread=True)
@@ -244,6 +281,26 @@ class OKtui(App):
         except Exception as e:
             self.widget_content_server_show.clear()
             self.widget_content_server_show.write(f"Error: {e}")
+            log(f"Error: {e}")
+
+
+    @work(thread=True)
+    def fetch_console_log_show(self, value: str) -> None:
+        """Execute 'console log show'."""
+        try:
+            region = next((instance for instance in self.instances_list if instance["Name"] == value), None)["region"]
+            cmd = ["openstack", "console", "log", "show", value, "--os-region-name", region]
+            if not self.instances_console_logs.get(value):
+                self.notify("Execute 'console log show'")
+                cmd_exec = cmd.copy()
+                cmd_exec[1:1] = self.auth_token["auth_args"].split()
+                result = subprocess.run(cmd_exec, capture_output=True, text=True, check=True)
+                self.instances_console_logs[value] = result.stdout
+            self.widget_content_console_log_show.border_title = f"{' '.join(cmd)}"
+            self.widget_content_console_log_show.write(self.instances_console_logs[value])
+        except Exception as e:
+            self.widget_content_console_log_show.clear()
+            self.widget_content_console_log_show.write(f"Error: {e}")
             log(f"Error: {e}")
 
 
