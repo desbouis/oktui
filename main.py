@@ -127,7 +127,7 @@ class OKtui(App):
 
     @on(DataTable.RowSelected)
     def update_instance_name_value(self, event) -> None:
-        """Allow to display instance name in maim panel."""
+        """Update selected instance name allowing to use it in openstack commands."""
         if event.data_table != self.widget_instances_list:
             return
         if not event.row_key:
