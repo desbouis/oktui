@@ -43,7 +43,7 @@ class OKtui(App):
     initial_labels = {
         "sidebar": "Instances list:",
         "filter": "Filter instances...",
-        "main_panel_title": "Select an instance to display details here...",
+        "title_server_show": "Select an instance to display details here...",
         "status_bar": "Loading...",
     }
 
@@ -58,9 +58,9 @@ class OKtui(App):
                 self.widget_instances_list = DataTable(header_height=2, show_header=False, cursor_type="row", id="instances-list")
                 yield self.widget_instances_list
 
-            self.widget_main_panel = RichLog(id="main-panel", highlight=True, markup=True, auto_scroll=False)
-            self.widget_main_panel.border_title = self.initial_labels["main_panel_title"]
-            yield self.widget_main_panel
+            self.widget_content_server_show = RichLog(id="content-server-show", highlight=True, markup=True, auto_scroll=False)
+            self.widget_content_server_show.border_title = self.initial_labels["title_server_show"]
+            yield self.widget_content_server_show
 
         self.widget_status_bar = Static(self.initial_labels["status_bar"], id="status-bar")
         yield self.widget_status_bar
@@ -167,8 +167,8 @@ class OKtui(App):
         self.selected_instance_name = ""
         # Reset interface
         self.widget_instances_list.clear()
-        self.widget_main_panel.clear()
-        self.widget_main_panel.border_title = self.initial_labels["main_panel_title"]
+        self.widget_content_server_show.clear()
+        self.widget_content_server_show.border_title = self.initial_labels["title_server_show"]
         search = self.query_one(Input).value
         self.load_instances(search=search)
         self.notify("All data will be refreshed!")
@@ -182,7 +182,7 @@ class OKtui(App):
         """Copy content of main panel"""
         try:
             content = "```\n"
-            content += self.widget_main_panel.border_title
+            content += self.widget_content_server_show.border_title
             content += "\n\n"
             content += self.instances_details[self.selected_instance_name]
             content += "```\n"
@@ -218,13 +218,14 @@ class OKtui(App):
     def watch_selected_instance_name(self, value: str) -> None:
         """Display selected instance name."""
         if value:
-            self.widget_main_panel.border_title = f"Executing command..."
-            self.widget_main_panel.clear()
-            self.fetch_instance_details(value)
+            self.widget_content_server_show.border_title = f"Executing command..."
+            self.widget_content_server_show.clear()
+            self.fetch_server_show(value)
 
 
     @work(thread=True)
-    def fetch_instance_details(self, value: str) -> None:
+    def fetch_server_show(self, value: str) -> None:
+        """Execute 'server show'."""
         try:
             region = next((instance for instance in self.instances_list if instance["Name"] == value), None)["region"]
             cmd = ["openstack", "server", "show", value, "--os-region-name", region, "--format", "table"]
@@ -233,11 +234,11 @@ class OKtui(App):
                 cmd_exec[1:1] = self.auth_token["auth_args"].split()
                 result = subprocess.run(cmd_exec, capture_output=True, text=True, check=True)
                 self.instances_details[value] = result.stdout
-            self.widget_main_panel.border_title = f"{' '.join(cmd)}"
-            self.widget_main_panel.write(self.instances_details[value])
+            self.widget_content_server_show.border_title = f"{' '.join(cmd)}"
+            self.widget_content_server_show.write(self.instances_details[value])
         except Exception as e:
-            self.widget_main_panel.clear()
-            self.widget_main_panel.write(f"Error: {e}")
+            self.widget_content_server_show.clear()
+            self.widget_content_server_show.write(f"Error: {e}")
             log(f"Error: {e}")
 
 

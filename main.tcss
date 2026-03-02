@@ -18,7 +18,7 @@
     margin: 0 0 1 1
 }
 
-#main-panel {
+#content-server-show {
     width: 1fr;
     height: 100%;
     background: $surface;
