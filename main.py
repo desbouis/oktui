@@ -234,6 +234,7 @@ class OKtui(App):
             region = next((instance for instance in self.instances_list if instance["Name"] == value), None)["region"]
             cmd = ["openstack", "server", "show", value, "--os-region-name", region, "--format", "table"]
             if not self.instances_details.get(value):
+                self.notify("Execute 'server show'")
                 cmd_exec = cmd.copy()
                 cmd_exec[1:1] = self.auth_token["auth_args"].split()
                 result = subprocess.run(cmd_exec, capture_output=True, text=True, check=True)
