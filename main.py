@@ -41,8 +41,8 @@ class OKtui(App):
     last_update: reactive[str] = reactive("")
     selected_instance_name: reactive[str] = reactive("")
     instances_list = []
-    instances_details = {}
-    instances_console_logs = {}
+    cache_server_show = {}
+    cache_console_log_show = {}
     initial_labels = {
         "sidebar": "Instances list:",
         "filter": "Filter instances...",
@@ -173,8 +173,8 @@ class OKtui(App):
         self.widget_status_bar.update("Refreshing data...")
         # Clean stored data
         self.instances_list = []
-        self.instances_details = {}
-        self.instances_console_logs = {}
+        self.cache_server_show = {}
+        self.cache_console_log_show = {}
         self.selected_instance_name = ""
         # Reset interface
         self.widget_instances_list.clear()
@@ -199,13 +199,13 @@ class OKtui(App):
                 content = "```\n"
                 content += self.widget_content_server_show.border_title
                 content += "\n\n"
-                content += self.instances_details[self.selected_instance_name]
+                content += self.cache_server_show[self.selected_instance_name]
                 content += "```\n"
             if tab.active == "tab-console-log-show":
                 content = "```\n"
                 content += self.widget_content_console_log_show.border_title
                 content += "\n\n"
-                content += self.instances_console_logs[self.selected_instance_name]
+                content += self.cache_console_log_show[self.selected_instance_name]
                 content += "```\n"
             pyperclip.copy(content)
             self.notify("Content copied to clipboard!", severity="information")
@@ -270,14 +270,14 @@ class OKtui(App):
         try:
             region = next((instance for instance in self.instances_list if instance["Name"] == value), None)["region"]
             cmd = ["openstack", "server", "show", value, "--os-region-name", region, "--format", "table"]
-            if not self.instances_details.get(value):
+            if not self.cache_server_show.get(value):
                 self.notify("Execute 'server show'")
                 cmd_exec = cmd.copy()
                 cmd_exec[1:1] = self.auth_token["auth_args"].split()
                 result = subprocess.run(cmd_exec, capture_output=True, text=True, check=True)
-                self.instances_details[value] = result.stdout
+                self.cache_server_show[value] = result.stdout
             self.widget_content_server_show.border_title = f"{' '.join(cmd)}"
-            self.widget_content_server_show.write(self.instances_details[value])
+            self.widget_content_server_show.write(self.cache_server_show[value])
         except Exception as e:
             self.widget_content_server_show.clear()
             self.widget_content_server_show.write(f"Error: {e}")
@@ -290,14 +290,14 @@ class OKtui(App):
         try:
             region = next((instance for instance in self.instances_list if instance["Name"] == value), None)["region"]
             cmd = ["openstack", "console", "log", "show", value, "--os-region-name", region]
-            if not self.instances_console_logs.get(value):
+            if not self.cache_console_log_show.get(value):
                 self.notify("Execute 'console log show'")
                 cmd_exec = cmd.copy()
                 cmd_exec[1:1] = self.auth_token["auth_args"].split()
                 result = subprocess.run(cmd_exec, capture_output=True, text=True, check=True)
-                self.instances_console_logs[value] = result.stdout
+                self.cache_console_log_show[value] = result.stdout
             self.widget_content_console_log_show.border_title = f"{' '.join(cmd)}"
-            self.widget_content_console_log_show.write(self.instances_console_logs[value])
+            self.widget_content_console_log_show.write(self.cache_console_log_show[value])
         except Exception as e:
             self.widget_content_console_log_show.clear()
             self.widget_content_console_log_show.write(f"Error: {e}")
