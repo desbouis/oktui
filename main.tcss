@@ -30,7 +30,6 @@
 }
 
 #status-bar {
-    dock: bottom;
     height: 1;
     background: $primary;
     color: $text;
