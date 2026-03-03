@@ -7,6 +7,7 @@ import subprocess
 
 from textual import log
 from textual import on
+from textual import screen
 from textual import work
 from textual.app import App, ComposeResult
 from textual.containers import Horizontal, Vertical
@@ -32,6 +33,7 @@ class OKtui(App):
     BINDINGS = [
         ("q", "quit", "Exit"),
         ("d", "toggle_dark", "Toggle theme"),
+        ("M", "maximize_output", "Maximize"),
         ("R", "refresh_all", "Refresh all"),
         ("r", "refresh_active_tab", "Refresh tab"),
         ("c", "copy_main_panel", "Copy content"),
@@ -229,6 +231,10 @@ class OKtui(App):
                 self.notify("Nothing to refresh!", severity="information")
         except Exception as e:
             self.notify(f"Error: {e}", severity="error")
+
+
+    def action_maximize_output(self) -> None:
+        self.screen.maximize(self.query_one("#main-tabbed-content", TabbedContent))
 
 
     def action_refresh_all(self) -> None:
