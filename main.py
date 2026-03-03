@@ -47,9 +47,9 @@ class OKtui(App):
     initial_labels = {
         "sidebar": "Instances list:",
         "filter": "Filter instances...",
-        "title_server_show": "Select an instance to display details here...",
-        "title_console_log_show": "Select an instance to display logs here...",
-        "title_server_event_list": "Select an instance to display events here...",
+        "title_server_show": "Select instance to display details here...",
+        "title_console_log_show": "Select instance to display logs here...",
+        "title_server_event_list": "Select instance to display events here...",
         "status_bar": "Loading...",
     }
 
