@@ -33,6 +33,7 @@ class OKtui(App):
         ("q", "quit", "Exit"),
         ("d", "toggle_dark", "Toggle theme"),
         ("R", "refresh_all", "Refresh all"),
+        ("r", "refresh_active_tab", "Refresh tab"),
         ("c", "copy_main_panel", "Copy content"),
     ]
 
@@ -199,8 +200,43 @@ class OKtui(App):
         self.notify("All data will be refreshed!")
 
 
+    @work(exclusive=True)
+    async def refresh_active_tab(self) -> None:
+        """Refresh content in active tab."""
+        self.notify("Refreshing content in active tab...", severity="information")
+        try:
+            if self.selected_instance_name:
+                tab = self.query_one("#main-tabbed-content", TabbedContent)
+                if tab.active == "tab-server-show":
+                    self.cache_server_show[self.selected_instance_name] = {}
+                    self.widget_content_server_show.clear()
+                    self.widget_content_server_show.border_title = f"Executing command..."
+                    self.widget_content_server_show.border_subtitle = ""
+                    self.fetch_server_show(self.selected_instance_name)
+                if tab.active == "tab-console-log-show":
+                    self.cache_console_log_show[self.selected_instance_name] = {}
+                    self.widget_content_console_log_show.clear()
+                    self.widget_content_console_log_show.border_title = f"Executing command..."
+                    self.widget_content_console_log_show.border_subtitle = ""
+                    self.fetch_console_log_show(self.selected_instance_name)
+                if tab.active == "tab-server-event-list":
+                    self.cache_server_event_list[self.selected_instance_name] = {}
+                    self.widget_content_server_event_list.clear()
+                    self.widget_content_server_event_list.border_title = f"Executing command..."
+                    self.widget_content_server_event_list.border_subtitle = ""
+                    self.fetch_server_event_list(self.selected_instance_name)
+            else:
+                self.notify("Nothing to refresh!", severity="information")
+        except Exception as e:
+            self.notify(f"Error: {e}", severity="error")
+
+
     def action_refresh_all(self) -> None:
         self.refresh_all()
+
+
+    def action_refresh_active_tab(self) -> None:
+        self.refresh_active_tab()
 
 
     def action_copy_main_panel(self) -> None:
