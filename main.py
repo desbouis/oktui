@@ -32,7 +32,7 @@ class OKtui(App):
     BINDINGS = [
         ("q", "quit", "Exit"),
         ("d", "toggle_dark", "Toggle theme"),
-        ("r", "refresh", "Refresh data"),
+        ("R", "refresh_all", "Refresh all"),
         ("c", "copy_main_panel", "Copy content"),
     ]
 
@@ -174,7 +174,7 @@ class OKtui(App):
 
 
     @work(exclusive=True)
-    async def refresh_data(self) -> None:
+    async def refresh_all(self) -> None:
         """Refresh all data."""
         self.widget_status_bar.update("Refreshing data...")
         # Clean stored data
@@ -196,8 +196,8 @@ class OKtui(App):
         self.notify("All data will be refreshed!")
 
 
-    def action_refresh(self) -> None:
-        self.refresh_data()
+    def action_refresh_all(self) -> None:
+        self.refresh_all()
 
 
     def action_copy_main_panel(self) -> None:
