@@ -28,7 +28,10 @@
     margin: 1 0 0 0;
 }
 
-#content-server-show, #content-console-log-show {
+#content-server-show,
+#content-console-log-show,
+#content-server-event-list
+{
     width: 1fr;
     background: $surface;
     border: solid $primary;

@@ -43,11 +43,13 @@ class OKtui(App):
     instances_list = []
     cache_server_show = {}
     cache_console_log_show = {}
+    cache_server_event_list = {}
     initial_labels = {
         "sidebar": "Instances list:",
         "filter": "Filter instances...",
         "title_server_show": "Select an instance to display details here...",
         "title_console_log_show": "Select an instance to display logs here...",
+        "title_server_event_list": "Select an instance to display events here...",
         "status_bar": "Loading...",
     }
 
@@ -71,6 +73,10 @@ class OKtui(App):
                     self.widget_content_console_log_show = RichLog(id="content-console-log-show", highlight=True, markup=False, auto_scroll=True)
                     self.widget_content_console_log_show.border_title = self.initial_labels["title_console_log_show"]
                     yield self.widget_content_console_log_show
+                with TabPane("Server event list", id="tab-server-event-list"):
+                    self.widget_content_server_event_list = RichLog(id="content-server-event-list", highlight=True, markup=False, auto_scroll=False)
+                    self.widget_content_server_event_list.border_title = self.initial_labels["title_server_event_list"]
+                    yield self.widget_content_server_event_list
 
         self.widget_status_bar = Static(self.initial_labels["status_bar"], id="status-bar")
         yield self.widget_status_bar
@@ -175,6 +181,7 @@ class OKtui(App):
         self.instances_list = []
         self.cache_server_show = {}
         self.cache_console_log_show = {}
+        self.cache_server_event_list = {}
         self.selected_instance_name = ""
         # Reset interface
         self.widget_instances_list.clear()
@@ -182,6 +189,8 @@ class OKtui(App):
         self.widget_content_server_show.border_title = self.initial_labels["title_server_show"]
         self.widget_content_console_log_show.clear()
         self.widget_content_console_log_show.border_title = self.initial_labels["title_console_log_show"]
+        self.widget_content_server_event_list.clear()
+        self.widget_content_server_event_list.border_title = self.initial_labels["title_server_event_list"]
         search = self.query_one(Input).value
         self.load_instances(search=search)
         self.notify("All data will be refreshed!")
@@ -204,6 +213,10 @@ class OKtui(App):
                 content += self.widget_content_console_log_show.border_title
                 content += "\n\n"
                 content += self.cache_console_log_show[self.selected_instance_name]
+            if tab.active == "tab-server-event-list":
+                content += self.widget_content_server_event_list.border_title
+                content += "\n\n"
+                content += self.cache_server_event_list[self.selected_instance_name]
             pyperclip.copy(f"```\n{content}```\n")
             self.notify("Content copied to clipboard!", severity="information")
         except Exception as e:
@@ -241,6 +254,8 @@ class OKtui(App):
             self.widget_content_server_show.clear()
             self.widget_content_console_log_show.border_title = f"Executing command..."
             self.widget_content_console_log_show.clear()
+            self.widget_content_server_event_list.border_title = f"Executing command..."
+            self.widget_content_server_event_list.clear()
             # Go to server show tab when selecting an instance
             self.query_one("#main-tabbed-content", TabbedContent).active = "tab-server-show"
             # Execute server show
@@ -256,6 +271,8 @@ class OKtui(App):
                     self.fetch_server_show(self.selected_instance_name)
                 if event.tabbed_content.active == "tab-console-log-show":
                     self.fetch_console_log_show(self.selected_instance_name)
+                if event.tabbed_content.active == "tab-server-event-list":
+                    self.fetch_server_event_list(self.selected_instance_name)
         except Exception as e:
             self.notify(f"Error: {e}", severity="error")
             log(f"Error: {e}")
@@ -298,6 +315,26 @@ class OKtui(App):
         except Exception as e:
             self.widget_content_console_log_show.clear()
             self.widget_content_console_log_show.write(f"Error: {e}")
+            log(f"Error: {e}")
+
+
+    @work(thread=True)
+    def fetch_server_event_list(self, value: str) -> None:
+        """Execute 'server event list'."""
+        try:
+            region = next((instance for instance in self.instances_list if instance["Name"] == value), None)["region"]
+            cmd = ["openstack", "server", "event", "list", value, "--os-region-name", region, "--format", "table"]
+            if not self.cache_server_event_list.get(value):
+                self.notify("Execute 'server event list'")
+                cmd_exec = cmd.copy()
+                cmd_exec[1:1] = self.auth_token["auth_args"].split()
+                result = subprocess.run(cmd_exec, capture_output=True, text=True, check=True)
+                self.cache_server_event_list[value] = result.stdout
+            self.widget_content_server_event_list.border_title = f"{' '.join(cmd)}"
+            self.widget_content_server_event_list.write(self.cache_server_event_list[value])
+        except Exception as e:
+            self.widget_content_server_event_list.clear()
+            self.widget_content_server_event_list.write(f"Error: {e}")
             log(f"Error: {e}")
 
 
