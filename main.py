@@ -4,6 +4,7 @@ import json
 import os
 import pyperclip
 import subprocess
+from rich.text import Text
 
 from textual import log
 from textual import on
@@ -133,8 +134,8 @@ class OKtui(App):
                     # Append some useful properties
                     for instance in list_by_region:
                         # status_label
-                        color = "green" if instance["Status"] == "ACTIVE" else "red" if instance["Status"] == "SHUTOFF" else "yellow"
-                        instance["status_label"] = f"[{color}]●[/]"
+                        emoji = ":green_circle:" if instance["Status"] == "ACTIVE" else ":red_circle:" if instance["Status"] == "SHUTOFF" else ":yellow_circle:"
+                        instance["status_label"] = Text.from_markup(emoji)
                         # region
                         instance["region"] = region
 
