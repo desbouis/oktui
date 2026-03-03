@@ -18,10 +18,6 @@
     margin: 0 0 1 1
 }
 
-#instances-list-title {
-    margin: 0 0 1 1
-}
-
 TabbedContent #--content-tab-tab-server-show,
 TabbedContent #--content-tab-tab-console-log-show,
 TabbedContent #--content-tab-tab-server-event-list
