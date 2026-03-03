@@ -195,19 +195,16 @@ class OKtui(App):
         """Copy content of main panel"""
         try:
             tab = self.query_one("#main-tabbed-content", TabbedContent)
+            content = ""
             if tab.active == "tab-server-show":
-                content = "```\n"
                 content += self.widget_content_server_show.border_title
                 content += "\n\n"
                 content += self.cache_server_show[self.selected_instance_name]
-                content += "```\n"
             if tab.active == "tab-console-log-show":
-                content = "```\n"
                 content += self.widget_content_console_log_show.border_title
                 content += "\n\n"
                 content += self.cache_console_log_show[self.selected_instance_name]
-                content += "```\n"
-            pyperclip.copy(content)
+            pyperclip.copy(f"```\n{content}```\n")
             self.notify("Content copied to clipboard!", severity="information")
         except Exception as e:
             self.notify(f"Error: {e}", severity="error")
