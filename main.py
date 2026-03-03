@@ -187,10 +187,13 @@ class OKtui(App):
         self.widget_instances_list.clear()
         self.widget_content_server_show.clear()
         self.widget_content_server_show.border_title = self.initial_labels["title_server_show"]
+        self.widget_content_server_show.border_subtitle = ""
         self.widget_content_console_log_show.clear()
         self.widget_content_console_log_show.border_title = self.initial_labels["title_console_log_show"]
+        self.widget_content_console_log_show.border_subtitle = ""
         self.widget_content_server_event_list.clear()
         self.widget_content_server_event_list.border_title = self.initial_labels["title_server_event_list"]
+        self.widget_content_server_event_list.border_subtitle = ""
         search = self.query_one(Input).value
         self.load_instances(search=search)
         self.notify("All data will be refreshed!")
@@ -208,15 +211,15 @@ class OKtui(App):
             if tab.active == "tab-server-show":
                 content += self.widget_content_server_show.border_title
                 content += "\n\n"
-                content += self.cache_server_show[self.selected_instance_name]
+                content += self.cache_server_show[self.selected_instance_name]["output"]
             if tab.active == "tab-console-log-show":
                 content += self.widget_content_console_log_show.border_title
                 content += "\n\n"
-                content += self.cache_console_log_show[self.selected_instance_name]
+                content += self.cache_console_log_show[self.selected_instance_name]["output"]
             if tab.active == "tab-server-event-list":
                 content += self.widget_content_server_event_list.border_title
                 content += "\n\n"
-                content += self.cache_server_event_list[self.selected_instance_name]
+                content += self.cache_server_event_list[self.selected_instance_name]["output"]
             pyperclip.copy(f"```\n{content}```\n")
             self.notify("Content copied to clipboard!", severity="information")
         except Exception as e:
@@ -251,10 +254,13 @@ class OKtui(App):
         if value:
             # Clean tabs
             self.widget_content_server_show.border_title = f"Executing command..."
+            self.widget_content_server_show.border_subtitle = ""
             self.widget_content_server_show.clear()
             self.widget_content_console_log_show.border_title = f"Executing command..."
+            self.widget_content_console_log_show.border_subtitle = ""
             self.widget_content_console_log_show.clear()
             self.widget_content_server_event_list.border_title = f"Executing command..."
+            self.widget_content_server_event_list.border_subtitle = ""
             self.widget_content_server_event_list.clear()
             # Go to server show tab when selecting an instance
             self.query_one("#main-tabbed-content", TabbedContent).active = "tab-server-show"
@@ -289,9 +295,13 @@ class OKtui(App):
                 cmd_exec = cmd.copy()
                 cmd_exec[1:1] = self.auth_token["auth_args"].split()
                 result = subprocess.run(cmd_exec, capture_output=True, text=True, check=True)
-                self.cache_server_show[value] = result.stdout
+                self.cache_server_show[value] = {
+                    "output": result.stdout,
+                    "last_update": datetime.now().strftime("%H:%M:%S"),
+                }
             self.widget_content_server_show.border_title = f"{' '.join(cmd)}"
-            self.widget_content_server_show.write(self.cache_server_show[value])
+            self.widget_content_server_show.border_subtitle = f"Last update: {self.cache_server_show[value]['last_update']}"
+            self.widget_content_server_show.write(self.cache_server_show[value]["output"])
         except Exception as e:
             self.widget_content_server_show.clear()
             self.widget_content_server_show.write(f"Error: {e}")
@@ -309,9 +319,13 @@ class OKtui(App):
                 cmd_exec = cmd.copy()
                 cmd_exec[1:1] = self.auth_token["auth_args"].split()
                 result = subprocess.run(cmd_exec, capture_output=True, text=True, check=True)
-                self.cache_console_log_show[value] = result.stdout
+                self.cache_console_log_show[value] = {
+                    "output": result.stdout,
+                    "last_update": datetime.now().strftime("%H:%M:%S"),
+                }
             self.widget_content_console_log_show.border_title = f"{' '.join(cmd)}"
-            self.widget_content_console_log_show.write(self.cache_console_log_show[value])
+            self.widget_content_console_log_show.border_subtitle = f"Last update: {self.cache_console_log_show[value]['last_update']}"
+            self.widget_content_console_log_show.write(self.cache_console_log_show[value]["output"])
         except Exception as e:
             self.widget_content_console_log_show.clear()
             self.widget_content_console_log_show.write(f"Error: {e}")
@@ -329,9 +343,13 @@ class OKtui(App):
                 cmd_exec = cmd.copy()
                 cmd_exec[1:1] = self.auth_token["auth_args"].split()
                 result = subprocess.run(cmd_exec, capture_output=True, text=True, check=True)
-                self.cache_server_event_list[value] = result.stdout
+                self.cache_server_event_list[value] = {
+                    "output": result.stdout,
+                    "last_update": datetime.now().strftime("%H:%M:%S"),
+                }
             self.widget_content_server_event_list.border_title = f"{' '.join(cmd)}"
-            self.widget_content_server_event_list.write(self.cache_server_event_list[value])
+            self.widget_content_server_event_list.border_subtitle = f"Last update: {self.cache_server_event_list[value]['last_update']}"
+            self.widget_content_server_event_list.write(self.cache_server_event_list[value]["output"])
         except Exception as e:
             self.widget_content_server_event_list.clear()
             self.widget_content_server_event_list.write(f"Error: {e}")
