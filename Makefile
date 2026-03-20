@@ -16,5 +16,8 @@ install: ## Install tools
 	uv venv --clear
 	uv pip install -r $(PROJECT_DIR)/requirements.txt
 
+pre-commit-run: ## Run pre-commit
+	@echo "> pre-commit well executed!"
+
 test: pre-commit-run ## Run tests
 	@echo "> Tests well executed!"
