@@ -23,4 +23,6 @@ install: ## Install tools
 pre-commit-run: ## Run pre-commit
 	prek run ${PREK_ARGS}
 
-test: pre-commit-run ## Run tests
+format: ## Run linter and formatter syntax
+	ruff check --fix .
+	ruff format .
