@@ -1,6 +1,6 @@
 # OKtui
 
-**`OKtui` - OpenStack TUI for final users, built in Python with [Textual](https://textual.textualize.io/).**
+**`OKtui` v0.0.1 - OpenStack TUI for final users, built in Python with [Textual](https://textual.textualize.io/).**
 
 ⚠️ *This project is young and in heavy development!*
 
