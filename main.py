@@ -42,6 +42,7 @@ class OKtui(App):
 
     auth_token = {}
     app_name = "OKtui"
+    app_release = os.environ["OKTUI_RELEASE"]
     regions = os.environ["OKTUI_REGIONS"].split()
     last_update: reactive[str] = reactive("")
     selected_instance_name: reactive[str] = reactive("")
@@ -83,8 +84,11 @@ class OKtui(App):
                     self.widget_content_server_event_list.border_title = self.initial_labels["title_server_event_list"]
                     yield self.widget_content_server_event_list
 
-        self.widget_status_bar = Static(self.initial_labels["status_bar"], id="status-bar")
-        yield self.widget_status_bar
+        with Horizontal(id="status-bar-set"):
+            self.widget_status_bar = Static(self.initial_labels["status_bar"], id="status-bar-message")
+            yield self.widget_status_bar
+            self.widget_release = Static(f"{self.app_name} {self.app_release}", id="status-bar-release")
+            yield self.widget_release
         yield Footer()
 
 

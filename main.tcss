@@ -45,11 +45,20 @@ TabbedContent #--content-tab-tab-server-event-list
     margin: 0 0 0 0;
 }
 
-#status-bar {
+#status-bar-set {
     height: 1;
     background: $primary;
     color: $text;
     padding: 0 2;
+}
+
+#status-bar-message {
+    width: 90%;
+}
+
+#status-bar-release {
+    width: 10%;
+    text-align: right;
 }
 
 #instances-list {
