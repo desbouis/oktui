@@ -1,0 +1,3 @@
+python-openstackclient==9.0.0
+textual==8.0.0
+textual-dev==1.8.0
