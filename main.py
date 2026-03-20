@@ -41,6 +41,7 @@ class OKtui(App):
     ]
 
     auth_token = {}
+    app_name = "OKtui"
     regions = os.environ["OKTUI_REGIONS"].split()
     last_update: reactive[str] = reactive("")
     selected_instance_name: reactive[str] = reactive("")
@@ -88,7 +89,7 @@ class OKtui(App):
 
 
     def on_mount(self) -> None:
-        self.title = "OKtui"
+        self.title = self.app_name
         self.sub_title = f"{' '.join(self.regions)}"
         for env_var in os.environ:
             if env_var.startswith("OS_"):
