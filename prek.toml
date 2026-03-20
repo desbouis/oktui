@@ -1,0 +1,36 @@
+[[repos]]
+repo = "builtin"
+hooks = [
+  { id = "check-added-large-files" },
+  { id = "check-case-conflict" },
+  { id = "check-executables-have-shebangs" },
+  { id = "check-merge-conflict" },
+  { id = "check-symlinks" },
+  { id = "check-toml" },
+  { id = "detect-private-key" },
+  { id = "end-of-file-fixer" },
+  { id = "trailing-whitespace" }
+]
+
+[[repos]]
+repo = "https://github.com/jorisroovers/gitlint"
+rev = "v0.19.1"
+hooks = [
+  {
+    id = "gitlint",
+    name = "Run gitlint",
+    args = ["--msg-filename"]
+  }
+]
+
+[[repos]]
+repo = "local"
+hooks = [
+  {
+    id = "docker-markdownlint",
+    name = "Run markdownlint with docker",
+    language = "docker_image",
+    entry = "markdownlint/markdownlint:0.15.0",
+    types = ["markdown"]
+  }
+]
