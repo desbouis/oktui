@@ -1,15 +1,11 @@
-import asyncio
-from datetime import datetime
 import json
 import os
-import pyperclip
 import subprocess
-from rich.text import Text
+from datetime import datetime
 
-from textual import log
-from textual import on
-from textual import screen
-from textual import work
+import pyperclip
+from rich.text import Text
+from textual import log, on, work
 from textual.app import App, ComposeResult
 from textual.containers import Horizontal, Vertical
 from textual.reactive import reactive
@@ -192,7 +188,7 @@ class OKtui(App):
         self.cache_console_log_show = {}
         self.cache_server_event_list = {}
         self.selected_instance_name = ""
-        # Reset interface
+        # Reset interface
         self.widget_instances_list.clear()
         self.widget_content_server_show.clear()
         self.widget_content_server_show.border_title = self.initial_labels["title_server_show"]
@@ -218,19 +214,19 @@ class OKtui(App):
                 if tab.active == "tab-server-show":
                     self.cache_server_show[self.selected_instance_name] = {}
                     self.widget_content_server_show.clear()
-                    self.widget_content_server_show.border_title = f"Executing command..."
+                    self.widget_content_server_show.border_title = "Executing command..."
                     self.widget_content_server_show.border_subtitle = ""
                     self.fetch_server_show(self.selected_instance_name)
                 if tab.active == "tab-console-log-show":
                     self.cache_console_log_show[self.selected_instance_name] = {}
                     self.widget_content_console_log_show.clear()
-                    self.widget_content_console_log_show.border_title = f"Executing command..."
+                    self.widget_content_console_log_show.border_title = "Executing command..."
                     self.widget_content_console_log_show.border_subtitle = ""
                     self.fetch_console_log_show(self.selected_instance_name)
                 if tab.active == "tab-server-event-list":
                     self.cache_server_event_list[self.selected_instance_name] = {}
                     self.widget_content_server_event_list.clear()
-                    self.widget_content_server_event_list.border_title = f"Executing command..."
+                    self.widget_content_server_event_list.border_title = "Executing command..."
                     self.widget_content_server_event_list.border_subtitle = ""
                     self.fetch_server_event_list(self.selected_instance_name)
             else:
@@ -300,14 +296,14 @@ class OKtui(App):
     def watch_selected_instance_name(self, value: str) -> None:
         """Display selected instance name."""
         if value:
-            # Clean tabs
-            self.widget_content_server_show.border_title = f"Executing command..."
+            # Clean tabs
+            self.widget_content_server_show.border_title = "Executing command..."
             self.widget_content_server_show.border_subtitle = ""
             self.widget_content_server_show.clear()
-            self.widget_content_console_log_show.border_title = f"Executing command..."
+            self.widget_content_console_log_show.border_title = "Executing command..."
             self.widget_content_console_log_show.border_subtitle = ""
             self.widget_content_console_log_show.clear()
-            self.widget_content_server_event_list.border_title = f"Executing command..."
+            self.widget_content_server_event_list.border_title = "Executing command..."
             self.widget_content_server_event_list.border_subtitle = ""
             self.widget_content_server_event_list.clear()
             # Go to server show tab when selecting an instance
