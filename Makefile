@@ -20,7 +20,7 @@ install: ## Install tools
 	prek clean
 	prek install --overwrite --hook-type pre-commit --hook-type commit-msg --hook-type pre-push
 
-pre-commit-run: ## Run pre-commit
+pre-commit-run: format ## Run pre-commit
 	prek run ${PREK_ARGS}
 
 format: ## Run linter and formatter syntax
