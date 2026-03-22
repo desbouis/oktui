@@ -21,6 +21,7 @@ select = [
 ]
 ignore = [
     "E501",   # too long line is managed by the formatter
+    "RUF012",
 ]
 fixable = ["ALL"]
 
